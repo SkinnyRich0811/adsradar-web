@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>AdsRadar Web</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📡</text></svg>">
+<style>
+:root{
+  --bg:#0b0f14; --panel:#121923; --panel2:#0e141d; --borde:#1f2a38;
+  --texto:#dce6f2; --dim:#7a8aa0; --verde:#2ecc71; --rojo:#ff5c5c;
+  --amarillo:#ffd166; --cian:#4dd0e1; --magenta:#c792ea; --azul:#64a9ff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--texto);font:15px/1.5 "Segoe UI",system-ui,sans-serif;min-height:100vh}
+a{color:var(--cian)}
+.oculto{display:none!important}
+
+/* ---------- login ---------- */
+#login{max-width:430px;margin:8vh auto;padding:28px;background:var(--panel);border:1px solid var(--borde);border-radius:14px}
+#login h1{font-size:26px;margin-bottom:4px}
+#login p{color:var(--dim);font-size:13px;margin-bottom:16px}
+#login label{display:block;font-size:12px;color:var(--dim);margin:12px 0 4px;text-transform:uppercase;letter-spacing:.5px}
+#login input{width:100%;padding:11px 12px;background:var(--panel2);border:1px solid var(--borde);border-radius:8px;color:var(--texto);font-size:14px}
+#login input:focus{outline:none;border-color:var(--cian)}
+#btn-entrar{width:100%;margin-top:18px;padding:12px;background:linear-gradient(135deg,#17a2b8,#4dd0e1);border:none;border-radius:8px;color:#02222a;font-weight:700;font-size:15px;cursor:pointer}
+#btn-entrar:disabled{opacity:.5;cursor:wait}
+#login-error{color:var(--rojo);font-size:13px;margin-top:10px;min-height:18px}
+.nota{font-size:12px;color:var(--dim);margin-top:14px;border-top:1px solid var(--borde);padding-top:10px}
+
+/* ---------- app ---------- */
+#app{max-width:1020px;margin:0 auto;padding:14px}
+header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:6px 2px 12px}
+header h1{font-size:20px}
+#live-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--verde);border:1px solid var(--verde);border-radius:20px;padding:2px 10px;text-transform:uppercase;letter-spacing:1px}
+#live-badge .punto{width:8px;height:8px;border-radius:50%;background:var(--verde);animation:latido 1.6s infinite}
+@keyframes latido{0%,100%{opacity:1}50%{opacity:.25}}
+#ultima{font-size:12px;color:var(--dim);margin-left:auto}
+#btn-salir{background:none;border:1px solid var(--borde);color:var(--dim);border-radius:8px;padding:5px 12px;cursor:pointer;font-size:12px}
+nav{display:flex;gap:6px;overflow-x:auto;padding-bottom:10px;-webkit-overflow-scrolling:touch}
+nav button{flex:0 0 auto;background:var(--panel);border:1px solid var(--borde);color:var(--dim);padding:8px 14px;border-radius:20px;font-size:13px;cursor:pointer;white-space:nowrap}
+nav button.activa{background:var(--cian);border-color:var(--cian);color:#02222a;font-weight:700}
+.panel{background:var(--panel);border:1px solid var(--borde);border-radius:12px;padding:18px;margin-bottom:14px}
+.panel h2{font-size:15px;color:var(--cian);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
+.panel h3{font-size:13px;color:var(--magenta);margin:16px 0 8px;text-transform:uppercase}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{color:var(--dim);text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.5px;padding:6px 8px;border-bottom:1px solid var(--borde)}
+td{padding:7px 8px;border-bottom:1px solid #16202e}
+tr:last-child td{border-bottom:none}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+th.num{text-align:right}
+.verde{color:var(--verde)} .rojo{color:var(--rojo)} .amarillo{color:var(--amarillo)}
+.dim{color:var(--dim)} .magenta{color:var(--magenta)} .cian{color:var(--cian)}
+.flash{animation:flashAnim 1.4s ease}
+@keyframes flashAnim{0%{background:#1f5c38}100%{background:transparent}}
+.cargando{color:var(--dim);padding:18px;text-align:center}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid var(--dim);border-top-color:var(--cian);border-radius:50%;animation:giro .8s linear infinite;vertical-align:-2px;margin-right:8px}
+@keyframes giro{to{transform:rotate(360deg)}}
+.reco{background:var(--panel2);border-left:3px solid var(--cian);border-radius:0 8px 8px 0;padding:10px 14px;margin-bottom:10px;font-size:14px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:var(--panel2);border:1px solid var(--borde);border-radius:10px;padding:12px}
+.kpi .v{font-size:21px;font-weight:700}
+.kpi .l{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.5px}
+.barra-ext{background:#16202e;border-radius:6px;height:14px;overflow:hidden;margin:6px 0}
+.barra-int{height:100%;background:linear-gradient(90deg,#17a2b8,#2ecc71);border-radius:6px;transition:width .6s}
+.mini-barras{display:flex;align-items:flex-end;gap:3px;height:70px;margin:10px 0}
+.mini-barras div{flex:1;background:linear-gradient(180deg,#4dd0e1,#17626e);border-radius:3px 3px 0 0;min-height:2px}
+button.accion{background:var(--panel2);border:1px solid var(--borde);color:var(--texto);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px}
+button.accion:hover{border-color:var(--cian)}
+button.copiar{background:none;border:1px solid var(--borde);color:var(--cian);border-radius:6px;padding:2px 10px;font-size:12px;cursor:pointer}
+input.campo,select.campo{padding:9px 11px;background:var(--panel2);border:1px solid var(--borde);border-radius:8px;color:var(--texto);font-size:14px}
+.fila-form{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.link-linea{display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid #16202e;font-size:13px}
+.link-linea code{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--texto)}
+.aviso{background:#2a2113;border:1px solid #574414;color:var(--amarillo);border-radius:8px;padding:10px 14px;font-size:13px;margin-top:12px}
+.subtabs{display:flex;gap:6px;margin-bottom:12px}
+.subtabs button{background:var(--panel2);border:1px solid var(--borde);color:var(--dim);padding:5px 12px;border-radius:8px;font-size:12px;cursor:pointer}
+.subtabs button.activa{color:var(--cian);border-color:var(--cian)}
+@media (max-width:600px){ td,th{padding:6px 5px;font-size:12.5px} .panel{padding:12px} }
+</style>
+</head>
+<body>
+
+<!-- ==================== LOGIN ==================== -->
+<div id="login">
+  <h1>📡 AdsRadar <span class="cian">Web</span></h1>
+  <p>Analítica Adsterra en vivo · todas tus estadísticas, sin instalar nada</p>
+  <label>Token / API Key de Adsterra</label>
+  <input id="inp-token" type="password" placeholder="Pega aquí tu token (solo lectura)" autocomplete="off">
+  <label>URL de tu proxy (Cloudflare Worker)</label>
+  <input id="inp-proxy" type="url" placeholder="https://adsradar-proxy.TUNOMBRE.workers.dev">
+  <button id="btn-entrar" onclick="entrar()">Probar y entrar ➜</button>
+  <div id="login-error"></div>
+  <div class="nota">
+    🔒 Tu token se guarda <b>solo en este navegador</b> (localStorage) y viaja únicamente
+    hacia tu propio proxy → Adsterra. Nadie más lo ve. El bot es 100% de lectura:
+    no puede tocar ni cambiar nada de tu cuenta.
+  </div>
+</div>
+
+<!-- ==================== APP ==================== -->
+<div id="app" class="oculto">
+  <header>
+    <h1>📡 AdsRadar <span class="cian">Web</span></h1>
+    <span id="live-badge"><span class="punto"></span> En vivo</span>
+    <span id="ultima"></span>
+    <button id="btn-salir" onclick="salir()">Salir</button>
+  </header>
+  <nav id="nav"></nav>
+  <main id="contenido"></main>
+</div>
+
+<script>
+"use strict";
+/* ============================================================
+   AdsRadar Web 1.0 — Joel + Claude · 2026
+   Frontend estático (GitHub Pages) + proxy Cloudflare Worker.
+   Solo lectura. Ritmo de llamadas limitado para cuidar la cuenta.
+   ============================================================ */
+
+const LIVE_CADA_MS = 60000;     // sondeo en vivo: 1 llamada por minuto
+const PAUSA_MS     = 1500;      // pausa entre llamadas a la API (anti-429)
+
+const PAISES = {US:"Estados Unidos",DO:"Rep. Dominicana",MX:"México",ES:"España",AR:"Argentina",
+CO:"Colombia",PE:"Perú",CL:"Chile",VE:"Venezuela",EC:"Ecuador",GT:"Guatemala",BO:"Bolivia",
+PY:"Paraguay",UY:"Uruguay",HN:"Honduras",SV:"El Salvador",NI:"Nicaragua",CR:"Costa Rica",
+PA:"Panamá",PR:"Puerto Rico",CU:"Cuba",BR:"Brasil",GB:"Reino Unido",DE:"Alemania",FR:"Francia",
+IT:"Italia",PT:"Portugal",CA:"Canadá",IN:"India",ID:"Indonesia",PH:"Filipinas",VN:"Vietnam",
+TH:"Tailandia",BD:"Bangladesh",PK:"Pakistán",NG:"Nigeria",EG:"Egipto",ZA:"Sudáfrica",TR:"Turquía",
+RU:"Rusia",UA:"Ucrania",PL:"Polonia",NL:"Países Bajos",JP:"Japón",KR:"Corea del Sur",CN:"China",
+AU:"Australia",SA:"Arabia Saudita",AE:"Emiratos Árabes",MA:"Marruecos",DZ:"Argelia",KE:"Kenia",MY:"Malasia"};
+const OFFSET_UTC = {US:-5,DO:-4,MX:-6,ES:1,AR:-3,CO:-5,PE:-5,CL:-3,BR:-3,GB:0,DE:1,FR:1,IT:1,
+CA:-5,PR:-4,PA:-5,IN:5,ID:7,PH:8,TH:7,VN:7,BD:6,PK:5,MY:8,NG:1,EG:2,ZA:2,JP:9,KR:9,CN:8,AU:10,TR:3};
+const CANALES_DEFECTO = ["twitter","facebook","whatsapp","telegram","pinterest","tiktok","youtube"];
+const CANALES_POR_SITIO = [
+ ["radarviral","Radar Viral (noticias virales)",["X/Twitter: hilo + tuit con gancho","Grupos de Facebook de farándula/noticias","Estados y canales de WhatsApp","TikTok: clip de 30s con el dato fuerte"]],
+ ["toolbox","ToolBox Gratis (herramientas)",["Pinterest: 1 pin por herramienta ('qr code free', 'word counter')","Respuestas útiles en Reddit/foros (aporta, no spamees)","Quora/foros en español: responde y enlaza tu herramienta","Grupos FB de estudiantes/oficina/emprendedores"]],
+ ["dinerocl","Dinero Claro (finanzas)",["Grupos FB de finanzas personales RD/LatAm","X/Twitter con tips de ahorro","Pinterest: infografías de presupuesto"]],
+ ["clearance","Clearance (marketplace)",["Grupos FB locales de ofertas","Marketplace y comunidades de la zona"]],
+];
+
+/* ---------------- estado ---------------- */
+const S = { token:"", proxy:"", cache:{}, ultimoHoy:null, timerLive:null };
+
+/* ---------------- utilidades ---------------- */
+const $ = s => document.querySelector(s);
+const esc = t => String(t).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const money = x => "$" + (+x||0).toLocaleString("en-US",{minimumFractionDigits:3,maximumFractionDigits:3});
+const fnum  = x => (+x||0).toLocaleString("en-US");
+const nombrePais = c => { const k = String(c).toUpperCase(); return PAISES[k] ? PAISES[k] + " (" + k + ")" : k; };
+const hoyISO = (d=0) => { const t = new Date(); t.setDate(t.getDate()-d); return t.toISOString().slice(0,10); };
+const metr = i => {
+  const imp = +(i.impression ?? i.impressions ?? 0) || 0;
+  const cli = +(i.clicks ?? 0) || 0;
+  const rev = +(i.revenue ?? 0) || 0;
+  return { imp, cli, rev, cpm: imp ? rev/imp*1000 : 0 };
+};
+const sumar = items => items.reduce((a,i)=>{const m=metr(i);a.imp+=m.imp;a.cli+=m.cli;a.rev+=m.rev;return a;},{imp:0,cli:0,rev:0});
+function inferirTipo(titulo){
+  const t = String(titulo).toLowerCase();
+  if (t.includes("smartlink")||t.includes("smart-link")) return "Smartlink";
+  if (t.includes("social")) return "Social Bar";
+  if (t.includes("native")) return "Native Banner";
+  if (t.includes("popunder")||t.includes("pop_")||t.startsWith("pop")) return "Popunder";
+  for (const m of ["728x90","320x50","300x250","468x60","160x600","160x300"]) if (t.includes(m)) return "Banner "+m;
+  if (t.includes("banner")) return "Banner";
+  return "Unidad";
+}
+
+/* ---------------- cliente API (con ritmo y reintentos) ---------------- */
+let colaAPI = Promise.resolve(), ultimaLlamada = 0;
+function api(ruta, params){
+  colaAPI = colaAPI.catch(()=>{}).then(async () => {
+    const espera = PAUSA_MS - (Date.now() - ultimaLlamada);
+    if (espera > 0) await new Promise(r => setTimeout(r, espera));
+    let url = S.proxy.replace(/\/+$/,"") + "/publisher/" + ruta;
+    if (params){
+      const q = new URLSearchParams();
+      for (const [k,v] of Object.entries(params)){
+        if (v == null) continue;
+        if (Array.isArray(v)) v.forEach(x => q.append(k, x)); else q.append(k, v);
+      }
+      url += "?" + q.toString();
+    }
+    for (let intento = 1; intento <= 3; intento++){
+      let r;
+      try { r = await fetch(url, { headers: { "X-API-Key": S.token } }); }
+      catch(e){ if (intento === 3) throw new Error("No se pudo conectar con tu proxy. ¿La URL del Worker está bien?");
+                await new Promise(x=>setTimeout(x, 2000*intento)); continue; }
+      ultimaLlamada = Date.now();
+      if (r.status === 401) throw new Error("401: token incorrecto.");
+      if (r.status === 403) throw new Error("403: token expirado — genera uno nuevo en el panel de Adsterra.");
+      if (r.status === 429){ await new Promise(x=>setTimeout(x, 8000*intento)); continue; }
+      if (!r.ok) { if (intento === 3) throw new Error("Error " + r.status + " en " + ruta);
+                   await new Promise(x=>setTimeout(x, 2000*intento)); continue; }
+      const j = await r.json();
+      return j.items ?? (j.data && j.data.items) ?? j;
+    }
+    throw new Error("La API no respondió (varios intentos).");
+  });
+  return colaAPI;
+}
+const getDominios   = async () => S.cache.dom ?? (S.cache.dom = await api("domains.json"));
+const getPlacements = async () => S.cache.pla ?? (S.cache.pla = await api("placements.json"));
+const getSmartlinks = async () => S.cache.sl  ?? (S.cache.sl  = await api("smart-links.json"));
+const getStats = (d1,d2,extra={}) => {
+  const p = { start_date:d1, finish_date:d2 };
+  if (extra.domain)   p.domain = extra.domain;
+  if (extra.group_by) p["group_by[]"] = extra.group_by;
+  return api("stats.json", p);
+};
+async function catalogoUnidades(){
+  if (S.cache.cat) return S.cache.cat;
+  const [doms, plas, sls] = [await getDominios(), await getPlacements(), await getSmartlinks()];
+  const mapaDom = {}; doms.forEach(d => mapaDom[String(d.id)] = String(d.domain ?? d.title ?? "?"));
+  const cat = {};
+  plas.forEach(p => {
+    const titulo = String(p.title ?? p.alias ?? p.id);
+    cat[String(p.id)] = { nombre:titulo, sitio:mapaDom[String(p.domain_id)] ?? "?", tipo:inferirTipo(titulo), trafico:"" };
+  });
+  sls.forEach(s => {
+    const sid = String(s.id);
+    if (!cat[sid]) cat[sid] = { nombre:String(s.title ?? sid), sitio:"—", tipo:"Smartlink", trafico:"" };
+    cat[sid].tipo = "Smartlink"; cat[sid].trafico = String(s.traffic_type ?? "");
+  });
+  return (S.cache.cat = cat);
+}
+const etiqueta = u => {
+  const partes = [u.tipo];
+  if (u.trafico) partes.push(u.trafico);
+  if (u.sitio && u.sitio !== "—" && u.sitio !== "?") partes.push(u.sitio);
+  return u.nombre + " (" + partes.join(", ") + ")";
+};
+
+/* ---------------- almacenamiento local ---------------- */
+const lsGet = (k, def) => { try { return JSON.parse(localStorage.getItem(k)) ?? def; } catch(e){ return def; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} };
+
+/* ---------------- login / sesión ---------------- */
+async function entrar(){
+  const token = $("#inp-token").value.trim();
+  const proxy = $("#inp-proxy").value.trim();
+  const err = $("#login-error");
+  if (!token) return err.textContent = "Pega tu token de Adsterra.";
+  const proxyOk = /^https:\/\//.test(proxy) || /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?/.test(proxy);
+  if (!proxyOk) return err.textContent = "Pega la URL de tu Worker (empieza con https://).";
+  err.textContent = ""; $("#btn-entrar").disabled = true; $("#btn-entrar").textContent = "Verificando con Adsterra...";
+  S.token = token; S.proxy = proxy; S.cache = {};
+  try {
+    const doms = await api("domains.json");
+    lsSet("ar_token", token); lsSet("ar_proxy", proxy);
+    S.cache.dom = doms;
+    iniciarApp();
+  } catch(e){
+    err.textContent = "✗ " + e.message;
+    $("#btn-entrar").disabled = false; $("#btn-entrar").textContent = "Probar y entrar ➜";
+  }
+}
+function salir(){
+  localStorage.removeItem("ar_token");
+  clearInterval(S.timerLive);
+  location.reload();
+}
+
+/* ---------------- navegación ---------------- */
+const TABS = [
+  ["resumen","📊 Resumen"],["regiones","🌎 Regiones"],["unidades","🏷️ Unidades"],
+  ["analisis","🧠 Análisis"],["tendencias","📈 Tendencias"],["canales","📣 Canales"],
+  ["plan","🗓️ Plan"],["meta","🎯 Meta"],["links","🔗 Links"],["catalogo","📚 Catálogo"],["exportar","⬇️ CSV"],
+];
+let tabActiva = "resumen";
+let epocaVista = 0;
+function pinta(ep, html){
+  if (ep !== epocaVista) return false;   // llegó tarde: otra pestaña ya está activa
+  $("#contenido").innerHTML = html;
+  marcarActualizado();
+  return true;
+}
+function iniciarApp(){
+  $("#login").classList.add("oculto");
+  $("#app").classList.remove("oculto");
+  $("#nav").innerHTML = TABS.map(([id,t]) =>
+    `<button id="tab-${id}" onclick="abrirTab('${id}')">${t}</button>`).join("");
+  abrirTab("resumen");
+  clearInterval(S.timerLive);
+  S.timerLive = setInterval(tickVivo, LIVE_CADA_MS);
+}
+function abrirTab(id){
+  tabActiva = id;
+  const ep = ++epocaVista;
+  TABS.forEach(([t]) => $("#tab-"+t).classList.toggle("activa", t === id));
+  $("#contenido").innerHTML = `<div class="panel"><div class="cargando"><span class="spin"></span>Consultando Adsterra...</div></div>`;
+  ({resumen:vResumen,regiones:vRegiones,unidades:vUnidades,analisis:vAnalisis,tendencias:vTendencias,
+    canales:vCanales,plan:vPlan,meta:vMeta,links:vLinks,catalogo:vCatalogo,exportar:vExportar}[id])(ep)
+    .catch(e => pinta(ep, `<div class="panel"><p class="rojo">✗ ${esc(e.message)}</p></div>`));
+}
+function marcarActualizado(){
+  $("#ultima").textContent = "Actualizado " + new Date().toLocaleTimeString("es-DO",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+}
+
+/* ---------------- EN VIVO: sondeo cada minuto ---------------- */
+async function tickVivo(){
+  if (document.hidden) return;                       // pestaña oculta: no gastamos llamadas
+  try {
+    const hoy = hoyISO();
+    const t = sumar(await getStats(hoy, hoy));
+    const previo = S.ultimoHoy;
+    S.ultimoHoy = t;
+    marcarActualizado();
+    const celImp = $("#hoy-imp"), celCli = $("#hoy-cli"), celRev = $("#hoy-rev");
+    if (celImp){
+      celImp.textContent = fnum(t.imp); celCli.textContent = fnum(t.cli); celRev.textContent = money(t.rev);
+      if (previo && (t.imp !== previo.imp || t.cli !== previo.cli || t.rev !== previo.rev)){
+        [celImp,celCli,celRev].forEach(c => { c.classList.remove("flash"); void c.offsetWidth; c.classList.add("flash"); });
+      }
+    }
+  } catch(e){ /* un fallo de red en un tick no rompe nada; el próximo lo reintenta */ }
+}
+document.addEventListener("visibilitychange", () => { if (!document.hidden && S.token) tickVivo(); });
+
+/* ---------------- VISTAS ---------------- */
+async function vResumen(ep){
+  const doms = await getDominios();
+  const periodos = [["HOY",hoyISO(),hoyISO()],["AYER",hoyISO(1),hoyISO(1)],
+                    ["ÚLT. 7 DÍAS",hoyISO(7),hoyISO()],["ÚLT. 30 DÍAS",hoyISO(30),hoyISO()]];
+  const filas = [];
+  for (const [n,d1,d2] of periodos) filas.push([n, sumar(await getStats(d1,d2))]);
+  S.ultimoHoy = filas[0][1];
+
+  let html = `<div class="panel"><h2>Resumen general <span class="dim" style="text-transform:none">· ${doms.length} dominios · se actualiza solo cada minuto</span></h2>
+  <table><tr><th>Período</th><th class="num">Impresiones</th><th class="num">Clics</th><th class="num">CTR</th><th class="num">eCPM</th><th class="num">Ingresos</th></tr>`;
+  for (const [n,t] of filas){
+    const ids = n === "HOY" ? ['id="hoy-imp"','id="hoy-cli"','id="hoy-rev"'] : ["","",""];
+    html += `<tr><td>${n}</td><td class="num" ${ids[0]}>${fnum(t.imp)}</td><td class="num" ${ids[1]}>${fnum(t.cli)}</td>
+    <td class="num">${t.imp?(t.cli/t.imp*100).toFixed(2):"0.00"}%</td>
+    <td class="num">${money(t.imp?t.rev/t.imp*1000:0)}</td><td class="num verde" ${ids[2]}><b>${money(t.rev)}</b></td></tr>`;
+  }
+  html += `</table></div><div class="panel"><h2>Ingresos por dominio · últimos 7 días</h2><table>`;
+  const porDom = {};
+  for (const d of doms){
+    const t = sumar(await getStats(hoyISO(7), hoyISO(), {domain:d.id}));
+    const nom = String(d.domain ?? d.title ?? d.id);
+    porDom[nom] = t.rev;
+    html += `<tr><td>${esc(nom)}</td><td class="num dim">${fnum(t.imp)} imp.</td><td class="num verde"><b>${money(t.rev)}</b></td></tr>`;
+  }
+  html += `</table></div>`;
+  if (!pinta(ep, html)) return;
+
+  // foto del día para Tendencias (una por fecha, en este navegador)
+  const hist = lsGet("ar_hist", {});
+  hist[hoyISO()] = { rev:+filas[0][1].rev.toFixed(4), imp:filas[0][1].imp };
+  lsSet("ar_hist", hist);
+}
+
+async function vRegiones(ep){
+  const cat = await catalogoUnidades();
+  const cruce = await getStats(hoyISO(7), hoyISO(), {group_by:["country","placement"]});
+  const paises = {};
+  cruce.forEach(i => {
+    const m = metr(i), cod = String(i.country ?? "?");
+    const p = paises[cod] ?? (paises[cod] = {imp:0,cli:0,rev:0,unidades:[]});
+    p.imp += m.imp; p.cli += m.cli; p.rev += m.rev;
+    if (m.imp > 0 || m.rev > 0) p.unidades.push([String(i.placement), m.imp, m.rev]);
+  });
+  const filas = Object.entries(paises).map(([cod,p]) =>
+    ({cod, ...p, cpm: p.imp ? p.rev/p.imp*1000 : 0})).sort((a,b)=>b.rev-a.rev);
+
+  let html = `<div class="panel"><h2>Top regiones · últimos 7 días</h2>
+  <table><tr><th>Región</th><th class="num">Impresiones</th><th class="num">Clics</th><th class="num">Ingresos</th><th class="num">eCPM</th></tr>`;
+  filas.slice(0,15).forEach(f => html += `<tr><td>${esc(nombrePais(f.cod))}</td><td class="num">${fnum(f.imp)}</td>
+    <td class="num">${fnum(f.cli)}</td><td class="num verde">${money(f.rev)}</td><td class="num">${money(f.cpm)}</td></tr>`);
+  html += `</table>`;
+  if (filas.length){
+    const conDatos = filas.filter(f=>f.imp>=20);
+    const mejorCpm = conDatos.length ? conDatos.reduce((a,b)=>b.cpm>a.cpm?b:a) : filas[0];
+    html += `<p style="margin-top:12px">★ <b>Más ingresos:</b> <span class="verde">${esc(nombrePais(filas[0].cod))} con ${money(filas[0].rev)}</span><br>
+    ★ <b>Mejor CPM:</b> <span class="magenta">${esc(nombrePais(mejorCpm.cod))} con ${money(mejorCpm.cpm)} por cada 1,000 vistas</span></p>`;
+  }
+  html += `</div><div class="panel"><h2>Qué funcionó en cada región (top 3)</h2>`;
+  let alguna = false;
+  for (const f of filas.slice(0,3)){
+    if (f.rev <= 0) continue;
+    alguna = true;
+    html += `<h3>▶ ${esc(nombrePais(f.cod))} — total <span class="verde">${money(f.rev)}</span></h3>`;
+    const unidades = f.unidades.sort((a,b)=>b[2]-a[2]).filter(u=>u[2]>0).slice(0,3);
+    if (!unidades.length) html += `<p class="dim">(impresiones sin ingresos todavía)</p>`;
+    unidades.forEach(([pid,imp,rev]) => {
+      const u = cat[pid] ?? {nombre:pid,sitio:"?",tipo:"Unidad",trafico:""};
+      html += `<p>• ${esc(etiqueta(u))} → <span class="verde">${money(rev)}</span> <span class="dim">(${fnum(imp)} imp.)</span></p>`;
+    });
+  }
+  if (!alguna) html += `<p class="dim">Aún sin ingresos por región en los últimos 7 días.</p>`;
+  pinta(ep, html + `</div>`);
+}
+
+async function vUnidades(ep){
+  const cat = await catalogoUnidades();
+  const items = await getStats(hoyISO(7), hoyISO(), {group_by:["placement"]});
+  const filas = items.map(i => { const m = metr(i); const pid = String(i.placement ?? i.placement_id ?? "?");
+    return { nombre: cat[pid] ? etiqueta(cat[pid]) : pid, ...m }; }).sort((a,b)=>b.rev-a.rev);
+  let html = `<div class="panel"><h2>Top unidades · últimos 7 días</h2>
+  <table><tr><th>Unidad</th><th class="num">Impresiones</th><th class="num">Ingresos</th><th class="num">eCPM</th></tr>`;
+  filas.forEach(f => html += `<tr><td>${esc(f.nombre)}</td><td class="num">${fnum(f.imp)}</td>
+    <td class="num verde">${money(f.rev)}</td><td class="num">${money(f.cpm)}</td></tr>`);
+  pinta(ep, html + `</table></div>`);
+}
+
+async function vAnalisis(ep){
+  const cat = await catalogoUnidades();
+  const doms = await getDominios();
+  const cruce = await getStats(hoyISO(7), hoyISO(), {group_by:["country","placement"]});
+  const tot = sumar(cruce);
+  const ctr = tot.imp ? tot.cli/tot.imp*100 : 0;
+  const recos = [];
+
+  const parejas = cruce.map(i => ({...metr(i), cod:String(i.country ?? "?"), pid:String(i.placement)}))
+    .filter(p => p.rev > 0).sort((a,b)=>b.rev-a.rev);
+  parejas.slice(0,3).forEach(p => {
+    const u = cat[p.pid] ?? {nombre:p.pid,sitio:"?",tipo:"Unidad",trafico:""};
+    let extra = "";
+    if (u.tipo === "Smartlink"){
+      const tt = u.trafico.toLowerCase() === "adult" ? "contenido adulto" : "contenido normal (mainstream)";
+      extra = ` Es un Smartlink de ${tt}: compártelo donde haya público de ${nombrePais(p.cod)} o crea contenido para esa audiencia.`;
+    } else if (u.sitio !== "?" && u.sitio !== "—"){
+      extra = ` Está en ${u.sitio}: consigue más visitas de ${nombrePais(p.cod)} para ese sitio (horarios y temas de esa región).`;
+    }
+    recos.push(`✅ <b>${esc(etiqueta(u))}</b> funcionó en <b>${esc(nombrePais(p.cod))}</b>: <span class="verde">${money(p.rev)}</span> con ${fnum(p.imp)} vistas (eCPM ${money(p.cpm)}).${esc(extra)}`);
+  });
+
+  const porPais = {};
+  cruce.forEach(i => { const m = metr(i), c = String(i.country ?? "?");
+    const a = porPais[c] ?? (porPais[c] = [0,0]); a[0]+=m.imp; a[1]+=m.rev; });
+  const candidatos = Object.entries(porPais).filter(([,v])=>v[0]>=20)
+    .map(([c,v])=>({c,cpm:v[1]/v[0]*1000}));
+  if (candidatos.length){
+    const mejor = candidatos.reduce((a,b)=>b.cpm>a.cpm?b:a);
+    recos.push(`💎 La visita que más vale es la de <b>${esc(nombrePais(mejor.c))}</b> (eCPM <span class="magenta">${money(mejor.cpm)}</span>). Prioriza esa región al promocionar.`);
+  }
+
+  const porUnidad = {};
+  cruce.forEach(i => { const m = metr(i), p = String(i.placement);
+    const a = porUnidad[p] ?? (porUnidad[p] = [0,0]); a[0]+=m.imp; a[1]+=m.rev; });
+  const muertas = Object.entries(porUnidad).filter(([,v])=>v[0]>=30 && v[1]===0)
+    .map(([p])=>cat[p] ?? {nombre:p,sitio:"?"});
+  if (muertas.length){
+    const lista = muertas.slice(0,3).map(m=>`'${m.nombre}' (${m.sitio})`).join(", ");
+    recos.push(`🧹 ${muertas.length} unidad(es) con vistas pero $0.000: ${esc(lista)}${muertas.length>3?"...":""}. Si en 3 días siguen en cero, cambia el formato o revisa que el código siga pegado.`);
+  }
+
+  const revDoms = [];
+  for (const d of doms){
+    const t = sumar(await getStats(hoyISO(7), hoyISO(), {domain:d.id}));
+    revDoms.push([String(d.domain ?? d.title ?? "?"), t.rev]);
+  }
+  revDoms.sort((a,b)=>b[1]-a[1]);
+  if (tot.rev > 0 && revDoms.length && revDoms[0][1]/tot.rev >= 0.7)
+    recos.push(`⚠️ El ${(revDoms[0][1]/tot.rev*100).toFixed(0)}% de tus ingresos sale de <b>${esc(revDoms[0][0])}</b>. Diversifica: empuja tráfico a tus otros sitios.`);
+  if (tot.imp >= 300 && ctr < 0.4)
+    recos.push(`🎯 CTR global bajo (${ctr.toFixed(2)}%): prueba acercar un banner al contenido que la gente lee.`);
+  if (tot.imp < 300)
+    recos.push(`⏳ Pocos datos aún (${fnum(tot.imp)} impresiones/7 días): recomendaciones preliminares. La prioridad es tráfico real (Search Console, constancia, redes).`);
+
+  let html = `<div class="panel"><h2>Análisis inteligente · últimos 7 días</h2>
+  <div class="kpis">
+    <div class="kpi"><div class="v">${fnum(tot.imp)}</div><div class="l">Impresiones</div></div>
+    <div class="kpi"><div class="v">${fnum(tot.cli)}</div><div class="l">Clics</div></div>
+    <div class="kpi"><div class="v">${ctr.toFixed(2)}%</div><div class="l">CTR</div></div>
+    <div class="kpi"><div class="v verde">${money(tot.rev)}</div><div class="l">Ingresos</div></div>
+  </div>`;
+  html += recos.length ? recos.map(r=>`<div class="reco">${r}</div>`).join("")
+                       : `<p class="dim">Sin señales claras todavía. Vuelve cuando haya más datos.</p>`;
+  pinta(ep, html + `</div>`);
+}
+
+async function vTendencias(ep){
+  const hist = lsGet("ar_hist", {});
+  const fechas = Object.keys(hist).sort().slice(-14);
+  let html = `<div class="panel"><h2>Tendencias · historial en este navegador</h2>`;
+  if (fechas.length < 2){
+    html += `<p class="dim">El historial se llena solo: cada día que abras el Resumen se guarda la foto.
+    Llevas ${fechas.length} día(s). Vuelve mañana y verás la curva.</p>`;
+  } else {
+    const revs = fechas.map(f=>hist[f].rev), maxR = Math.max(...revs) || 1;
+    html += `<h3>Ingresos por día</h3><div class="mini-barras">` +
+      revs.map((v,i)=>`<div style="height:${Math.max(3, v/maxR*100)}%" title="${fechas[i]}: ${money(v)}"></div>`).join("") + `</div>`;
+    html += `<table><tr><th>Fecha</th><th class="num">Impresiones</th><th class="num">Ingresos</th></tr>`;
+    fechas.slice().reverse().forEach(f =>
+      html += `<tr><td>${f}</td><td class="num">${fnum(hist[f].imp)}</td><td class="num verde">${money(hist[f].rev)}</td></tr>`);
+    html += `</table>`;
+    const mitad = Math.floor(revs.length/2);
+    const prom1 = revs.slice(0,mitad).reduce((a,b)=>a+b,0)/Math.max(1,mitad);
+    const prom2 = revs.slice(mitad).reduce((a,b)=>a+b,0)/Math.max(1,revs.length-mitad);
+    html += prom2 >= prom1
+      ? `<p class="verde" style="margin-top:10px">↗ Tendencia al alza: sigue haciendo lo que estás haciendo.</p>`
+      : `<p class="amarillo" style="margin-top:10px">↘ Va bajando: mira Análisis y refuerza la región/unidad ganadora.</p>`;
+  }
+  pinta(ep, html + `</div>`);
+}
+
+async function vCanales(ep){
+  const items = await getStats(hoyISO(30), hoyISO(), {group_by:["placement_sub_id"]});
+  const filas = items.map(i => {
+    let canal = String(i.placement_sub_id ?? i.sub_id ?? "").trim();
+    if (["","-","null","None"].includes(canal)) canal = "(sin psid)";
+    return { canal, ...metr(i) };
+  }).sort((a,b)=>b.rev-a.rev);
+  let html = `<div class="panel"><h2>Rendimiento por canal (psid) · últimos 30 días</h2>
+  <table><tr><th>Canal</th><th class="num">Impresiones</th><th class="num">Clics</th><th class="num">Ingresos</th><th class="num">eCPM</th></tr>`;
+  filas.forEach(f => html += `<tr><td>${esc(f.canal)}</td><td class="num">${fnum(f.imp)}</td>
+    <td class="num">${fnum(f.cli)}</td><td class="num verde">${money(f.rev)}</td><td class="num">${money(f.cpm)}</td></tr>`);
+  html += `</table>`;
+  const conCanal = filas.filter(f=>f.canal!=="(sin psid)");
+  html += conCanal.length
+    ? `<p style="margin-top:12px" class="verde">★ CANAL GANADOR: <b>${esc(conCanal[0].canal)}</b> con ${money(conCanal[0].rev)}</p>`
+    : `<p class="dim" style="margin-top:12px">Aún no hay tráfico con psid. Genera tus links (pestaña Links) y publícalos; cuando entren visitas, aquí verás qué canal te paga.</p>`;
+  pinta(ep, html + `</div>`);
+}
+
+async function vPlan(ep){
+  const items = await getStats(hoyISO(7), hoyISO(), {group_by:["country"]});
+  const miOffset = -new Date().getTimezoneOffset()/60;   // tu zona, automática
+  const regiones = items.map(i => ({...metr(i), cod:String(i.country ?? "?")}))
+    .sort((a,b)=>b.rev-a.rev).slice(0,3);
+  let html = `<div class="panel"><h2>Plan de publicación de hoy</h2>
+  <h3>Regiones objetivo y a qué hora publicar</h3>`;
+  let algo = false;
+  regiones.forEach(r => {
+    if (r.rev <= 0 && r.imp < 20) return;
+    algo = true;
+    const off = OFFSET_UTC[r.cod.toUpperCase()];
+    let franja = "";
+    if (off != null){
+      const ini = ((19 - off + miOffset) % 24 + 24) % 24, fin = ((22 - off + miOffset) % 24 + 24) % 24;
+      franja = `Publica para esta región a las <b>${String(ini).padStart(2,"0")}:00–${String(fin).padStart(2,"0")}:00</b> (tu hora)`;
+    }
+    html += `<p>🌎 <b>${esc(nombrePais(r.cod))}</b>: ingresos <span class="verde">${money(r.rev)}</span>, eCPM ${money(r.cpm)}<br>
+    <span class="dim">${franja}</span></p>`;
+  });
+  if (!algo) html += `<p class="dim">Aún no hay regiones con movimiento suficiente.</p>`;
+  html += `<h3>Dónde publicar cada sitio</h3>`;
+  CANALES_POR_SITIO.forEach(([,titulo,ideas]) => {
+    html += `<p>📌 <b>${esc(titulo)}</b></p>` + ideas.map(i=>`<p class="dim" style="margin-left:16px">• ${esc(i)}</p>`).join("");
+  });
+  html += `<div class="aviso">Tip: usa tus links con psid (pestaña Links) para medir cada canal.
+  Solo tráfico orgánico/humano — nada de bots ni exchanges, eso banea la cuenta.</div>`;
+  pinta(ep, html + `</div>`);
+}
+
+async function vMeta(ep){
+  const hoy = new Date();
+  const d1 = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+  const iso = d => d.toISOString().slice(0,10);
+  const t = sumar(await getStats(iso(d1), hoyISO()));
+  const diasMes = new Date(hoy.getFullYear(), hoy.getMonth()+1, 0).getDate();
+  const diaN = hoy.getDate();
+  const proyeccion = diaN ? t.rev/diaN*diasMes : 0;
+  const meta = +lsGet("ar_meta", 0) || 0;
+  const MESES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+  let html = `<div class="panel"><h2>Meta mensual y proyección · ${MESES[hoy.getMonth()]} ${hoy.getFullYear()}</h2>
+  <div class="kpis">
+    <div class="kpi"><div class="v verde">${money(t.rev)}</div><div class="l">Acumulado</div></div>
+    <div class="kpi"><div class="v">${money(proyeccion)}</div><div class="l">Proyección fin de mes</div></div>
+    <div class="kpi"><div class="v">${meta?money(meta):"—"}</div><div class="l">Tu meta</div></div>
+  </div>`;
+  if (meta > 0){
+    const pct = Math.min(100, t.rev/meta*100);
+    html += `<div class="barra-ext"><div class="barra-int" style="width:${pct.toFixed(1)}%"></div></div>
+    <p class="dim">${pct.toFixed(1)}% de la meta</p>`;
+    html += proyeccion >= meta
+      ? `<p class="verde">✓ Al ritmo actual LLEGAS a la meta. 🎉</p>`
+      : `<p class="amarillo">Al ritmo actual faltarían ${money(meta-proyeccion)}. Más tráfico = más cerca.</p>`;
+  }
+  html += `<div class="fila-form" style="margin-top:14px">
+    <input class="campo" id="inp-meta" type="number" step="0.01" min="0" placeholder="Nueva meta en $" value="${meta||""}">
+    <button class="accion" onclick="lsSet('ar_meta', +document.getElementById('inp-meta').value||0); abrirTab('meta')">Guardar meta</button>
+  </div>`;
+  pinta(ep, html + `</div>`);
+}
+
+async function vLinks(ep){
+  const sls = await getSmartlinks();
+  const opciones = sls.map(s => ({ titulo:String(s.title ?? s.id), url:s.url ?? s.direct_url ?? "", tt:String(s.traffic_type ?? "") }))
+    .filter(o => o.url);
+  let html = `<div class="panel"><h2>Generador de links rastreables (psid)</h2>
+  <p class="dim">Cada variante lleva <b>?psid=canal</b>: Adsterra registra ese canal y la pestaña
+  "Canales" te dirá cuál generó dinero.</p>
+  <div class="fila-form" style="margin-top:12px">
+    <select class="campo" id="sel-base">` +
+    opciones.map((o,i)=>`<option value="${i}">${esc(o.titulo)} (${esc(o.tt||"Smartlink")})</option>`).join("") +
+    `<option value="M">Pegar otra URL...</option></select>
+    <input class="campo oculto" id="inp-url-manual" type="url" placeholder="https://..." style="flex:1;min-width:220px">
+    <input class="campo" id="inp-canales-extra" placeholder="Canales extra (coma)" style="min-width:170px">
+    <button class="accion" onclick="generarLinks()">Generar ➜</button>
+  </div>
+  <div id="links-salida"></div>
+  <div class="aviso">Publica cada variante SOLO en su canal. Regla de oro: tráfico humano y orgánico.
+  Nada de exchanges/autosurf — eso banea la cuenta.</div></div>`;
+  if (!pinta(ep, html)) return;
+  window._linksOpciones = opciones;
+  $("#sel-base").addEventListener("change", e =>
+    $("#inp-url-manual").classList.toggle("oculto", e.target.value !== "M"));
+}
+function generarLinks(){
+  const sel = $("#sel-base").value;
+  let base = "", etiq = "manual";
+  if (sel === "M") base = $("#inp-url-manual").value.trim();
+  else { const o = window._linksOpciones[+sel]; base = o.url; etiq = o.titulo; }
+  if (!/^https?:\/\//.test(base)) return $("#links-salida").innerHTML = `<p class="rojo">URL no válida.</p>`;
+  const extra = $("#inp-canales-extra").value.split(",").map(c=>c.trim().toLowerCase().replace(/\s+/g,"_")).filter(Boolean);
+  const canales = [...CANALES_DEFECTO, ...extra];
+  const sep = base.includes("?") ? "&" : "?";
+  let html = `<h3>Tus links (${esc(etiq)})</h3>`;
+  canales.forEach(c => {
+    const link = base + sep + "psid=" + c;
+    html += `<div class="link-linea"><span class="magenta" style="min-width:90px">${esc(c)}</span>
+    <code>${esc(link)}</code>
+    <button class="copiar" onclick="navigator.clipboard.writeText('${esc(link)}').then(()=>{this.textContent='✓'})">Copiar</button></div>`;
+  });
+  $("#links-salida").innerHTML = html;
+}
+
+async function vCatalogo(ep){
+  const [doms, plas, sls] = [await getDominios(), await getPlacements(), await getSmartlinks()];
+  const tablas = {
+    dominios: { titulo:`Mis dominios (${doms.length})`, filas:doms, cols:["id","domain","title","status"] },
+    placements: { titulo:`Mis placements (${plas.length})`, filas:plas, cols:["id","title","alias","domain_id"] },
+    smartlinks: { titulo:`Mis smartlinks (${sls.length})`, filas:sls, cols:["id","title","traffic_type","url","direct_url"] },
+  };
+  window._catTablas = tablas;
+  const ok = pinta(ep, `<div class="panel">
+    <div class="subtabs">
+      <button id="st-dominios" class="activa" onclick="subCat('dominios')">Dominios</button>
+      <button id="st-placements" onclick="subCat('placements')">Placements</button>
+      <button id="st-smartlinks" onclick="subCat('smartlinks')">Smartlinks</button>
+    </div><div id="cat-cuerpo"></div></div>`);
+  if (ok) subCat("dominios");
+}
+function subCat(cual){
+  ["dominios","placements","smartlinks"].forEach(s => $("#st-"+s).classList.toggle("activa", s===cual));
+  const t = window._catTablas[cual];
+  const cols = t.cols.filter(c => t.filas.length && c in t.filas[0]);
+  let html = `<h2>${esc(t.titulo)}</h2><div style="overflow-x:auto"><table><tr>` +
+    cols.map(c=>`<th>${c}</th>`).join("") + `</tr>`;
+  t.filas.forEach(f => html += `<tr>` + cols.map(c=>`<td>${esc(f[c] ?? "")}</td>`).join("") + `</tr>`);
+  $("#cat-cuerpo").innerHTML = html + `</table></div>`;
+}
+
+async function vExportar(ep){
+  pinta(ep, `<div class="panel"><h2>Exportar a CSV (para Excel)</h2>
+  <div class="fila-form">
+    <label class="dim">Desde</label><input class="campo" id="exp-d1" type="date" value="${hoyISO(30)}">
+    <label class="dim">Hasta</label><input class="campo" id="exp-d2" type="date" value="${hoyISO()}">
+    <select class="campo" id="exp-por">
+      <option value="date">por fecha</option><option value="country">por país</option>
+      <option value="placement">por unidad</option><option value="domain">por dominio</option>
+    </select>
+    <button class="accion" onclick="exportarCSV()">Descargar CSV ⬇️</button>
+  </div><div id="exp-estado" class="dim"></div></div>`);
+}
+async function exportarCSV(){
+  const d1 = $("#exp-d1").value, d2 = $("#exp-d2").value, por = $("#exp-por").value;
+  $("#exp-estado").innerHTML = `<span class="spin"></span>Consultando...`;
+  try {
+    const items = await getStats(d1, d2, {group_by:[por]});
+    if (!items.length) return $("#exp-estado").textContent = "Sin datos para ese rango.";
+    const cols = Object.keys(items[0]);
+    const csv = [cols.join(",")].concat(items.map(i =>
+      cols.map(c => `"${String(i[c] ?? "").replace(/"/g,'""')}"`).join(","))).join("\r\n");
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob(["﻿"+csv], {type:"text/csv"}));
+    a.download = `adsterra_${d1}_a_${d2}.csv`; a.click();
+    $("#exp-estado").textContent = `✓ Exportado: ${items.length} filas.`;
+  } catch(e){ $("#exp-estado").innerHTML = `<span class="rojo">✗ ${esc(e.message)}</span>`; }
+}
+
+/* ---------------- arranque ---------------- */
+(function(){
+  const token = lsGet("ar_token",""), proxy = lsGet("ar_proxy","");
+  if (proxy) $("#inp-proxy").value = proxy;
+  if (token && proxy){
+    S.token = token; S.proxy = proxy;
+    $("#login-error").textContent = "";
+    iniciarApp();
+  }
+})();
+</script>
+</body>
+</html>
